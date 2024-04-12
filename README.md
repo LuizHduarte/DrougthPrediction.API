@@ -1,4 +1,4 @@
-# API FOR DORUGHT FORECASTING USING MACHINE LEARNING METHODS
+# API FOR DROUGHT FORECASTING USING MACHINE LEARNING METHODS
 
 The Drought Predictor API is a powerful .NET-based application that leverages the power of machine learning to predict droughts. This API uses the TensorFlow.NET library, a .NET binding to the TensorFlow library which is a comprehensive ecosystem of tools, libraries, and community resources that lets researchers push the state-of-the-art in ML.
 
