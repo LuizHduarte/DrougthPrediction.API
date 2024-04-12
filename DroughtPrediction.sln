@@ -1,0 +1,55 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34622.214
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DroughtPrediction.Api", "DroughtPrediction\DroughtPrediction.Api.csproj", "{59F800B6-89F3-49B7-BEE5-F22F6D954DA4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DroughtPrediction.Services", "DroughtPrediction.Services\DroughtPrediction.Services.csproj", "{B3ED08EE-7AA1-4323-8533-B9A86B3228C4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DroughtPrediction.Exceptions", "Drought.Exception\DroughtPrediction.Exceptions.csproj", "{1E43F2CD-13F9-4DAD-92D3-CF2159C4EB92}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DroughtPrediction.Communication", "DroughtPrediction.Communication\DroughtPrediction.Communication.csproj", "{4B0591D8-9329-4A7F-9873-13577F3CA4E9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DroughtPrediction.DataVisualization", "DroughtPrediction.DataVisualization\DroughtPrediction.DataVisualization.csproj", "{EC57AD0D-5D9C-4CCD-91A3-D21046C37685}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DroughtPrediction.Domain", "DroughtPrediction.Domain\DroughtPrediction.Domain.csproj", "{4BD6C8AD-CDEE-4CED-B1B7-D4057675B4E2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{59F800B6-89F3-49B7-BEE5-F22F6D954DA4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{59F800B6-89F3-49B7-BEE5-F22F6D954DA4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{59F800B6-89F3-49B7-BEE5-F22F6D954DA4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{59F800B6-89F3-49B7-BEE5-F22F6D954DA4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3ED08EE-7AA1-4323-8533-B9A86B3228C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3ED08EE-7AA1-4323-8533-B9A86B3228C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3ED08EE-7AA1-4323-8533-B9A86B3228C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3ED08EE-7AA1-4323-8533-B9A86B3228C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E43F2CD-13F9-4DAD-92D3-CF2159C4EB92}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E43F2CD-13F9-4DAD-92D3-CF2159C4EB92}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E43F2CD-13F9-4DAD-92D3-CF2159C4EB92}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E43F2CD-13F9-4DAD-92D3-CF2159C4EB92}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4B0591D8-9329-4A7F-9873-13577F3CA4E9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4B0591D8-9329-4A7F-9873-13577F3CA4E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4B0591D8-9329-4A7F-9873-13577F3CA4E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4B0591D8-9329-4A7F-9873-13577F3CA4E9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EC57AD0D-5D9C-4CCD-91A3-D21046C37685}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC57AD0D-5D9C-4CCD-91A3-D21046C37685}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC57AD0D-5D9C-4CCD-91A3-D21046C37685}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC57AD0D-5D9C-4CCD-91A3-D21046C37685}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4BD6C8AD-CDEE-4CED-B1B7-D4057675B4E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4BD6C8AD-CDEE-4CED-B1B7-D4057675B4E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4BD6C8AD-CDEE-4CED-B1B7-D4057675B4E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4BD6C8AD-CDEE-4CED-B1B7-D4057675B4E2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E2BE0D98-06B3-42DE-8DB0-929D18F6C875}
+	EndGlobalSection
+EndGlobal
