@@ -75,7 +75,7 @@ public class DataProcessService : IDataProcessService
 
     public async Task<SplittedDataSet> SplitSIntoTestAndTrainData(IFormFile file)
     {
-        var dt = await _dataLoadingService.LoadFileData(file);
+        var dt = await _dataLoadingService.LoadFromXlsxFileData(file);
         var normalizedSpei = GetSpeiValues(dt);
         var monthData = GetMonthValues(dt);
 

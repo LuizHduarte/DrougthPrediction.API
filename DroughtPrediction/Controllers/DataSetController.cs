@@ -14,7 +14,7 @@ public class DataSetController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> GetSpeiData([FromServices] IDataLoadingService dataLoadingService, [FromServices] IDataProcessService dataProcessService, IFormFile file, [FromServices] IDataVisualizationService dataVisualizationService )
     {
-        var data = await dataLoadingService.LoadFileData(file);
+        var data = await dataLoadingService.LoadFromXlsxFileData(file);
         var speiValues = dataProcessService.GetSpeiValues(data);
         var monthValues = dataProcessService.GetMonthValues(data);
 

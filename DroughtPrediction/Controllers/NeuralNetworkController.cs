@@ -1,8 +1,7 @@
-﻿using DroughtPrediction.Services.NeuralNetwork;
-using Microsoft.AspNetCore.Http;
+﻿using DroughtPrediction.Communication;
+using DroughtPrediction.Services.DataLoading;
+using DroughtPrediction.Services.NeuralNetwork;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using System.IO;
 using System.Text;
 
 namespace DroughtPrediction.Api.Controllers;
@@ -12,7 +11,8 @@ namespace DroughtPrediction.Api.Controllers;
 public class NeuralNetworkController : ControllerBase
 {
     [HttpPost]
-    public async Task<IActionResult> TrainNetwork(IFormFile file, [FromServices] ITrainNeuralNetworkService service )
+    [Route("LoadFromXlsx")]
+    public async Task<IActionResult> TrainNetworkFromXlsx(IFormFile file, [FromServices] ITrainNeuralNetworkService service )
     {
         var result = await service.TrainModel(file);
 
@@ -32,4 +32,14 @@ public class NeuralNetworkController : ControllerBase
         //return Ok(File(result.imageBytes, "application/octet-stream", "filename.png"));
         return File(result.imageBytes, "application/octet-stream", "filename.png");
     }
+
+    [HttpPost]
+    [Route("LoadFromNetCdf")]
+    public async Task<IActionResult> TrainNetworkFromNetCDF(IFormFile file, [FromServices] IDataLoadingService service,[FromForm] BalanceCoordinatesObjectJson balanceCoordinatesObjectJson)
+    {
+        var result = await service.ExtractBalanceFromNetCdfFileData(file, balanceCoordinatesObjectJson);
+        return File(result, "text/csv", "filename.csv");
+    }
 }
+
+
