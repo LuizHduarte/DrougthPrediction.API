@@ -1,4 +1,4 @@
-﻿namespace DroughtPrediction.Communication;
+﻿namespace DroughtPrediction.Communication.Requests;
 public class BalanceCoordinatesObjectJson
 {
     public float Latitude { get; set; }

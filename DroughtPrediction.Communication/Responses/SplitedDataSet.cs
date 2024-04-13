@@ -1,4 +1,4 @@
-﻿namespace DroughtPrediction.Communication;
+﻿namespace DroughtPrediction.Communication.Responses;
 public class SplittedDataSet
 {
     public List<double> TrainData = [];

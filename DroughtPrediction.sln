@@ -13,7 +13,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DroughtPrediction.Communica
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DroughtPrediction.DataVisualization", "DroughtPrediction.DataVisualization\DroughtPrediction.DataVisualization.csproj", "{EC57AD0D-5D9C-4CCD-91A3-D21046C37685}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DroughtPrediction.Domain", "DroughtPrediction.Domain\DroughtPrediction.Domain.csproj", "{4BD6C8AD-CDEE-4CED-B1B7-D4057675B4E2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DroughtPrediction.Domain", "DroughtPrediction.Domain\DroughtPrediction.Domain.csproj", "{4BD6C8AD-CDEE-4CED-B1B7-D4057675B4E2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DroughtPrediction.MachineLearning", "DroughtPrediction.MachineLearning\DroughtPrediction.MachineLearning.csproj", "{987B9EE2-2859-40B1-BC82-80C767D1AFF0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +47,10 @@ Global
 		{4BD6C8AD-CDEE-4CED-B1B7-D4057675B4E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4BD6C8AD-CDEE-4CED-B1B7-D4057675B4E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4BD6C8AD-CDEE-4CED-B1B7-D4057675B4E2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{987B9EE2-2859-40B1-BC82-80C767D1AFF0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{987B9EE2-2859-40B1-BC82-80C767D1AFF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{987B9EE2-2859-40B1-BC82-80C767D1AFF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{987B9EE2-2859-40B1-BC82-80C767D1AFF0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,4 +1,4 @@
-﻿namespace DroughtPrediction.Communication;
+﻿namespace DroughtPrediction.Communication.Responses;
 public class ReshapedDataParcel
 {
     public double[][] IN_final = [];

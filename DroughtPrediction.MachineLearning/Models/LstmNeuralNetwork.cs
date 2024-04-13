@@ -1,4 +1,4 @@
-﻿namespace DroughtPrediction.Domain;
+﻿namespace DroughtPrediction.MachineLearning;
 public class LstmNeuralNetwork
 {
     public static readonly int TotalPoints = 12;

@@ -12,15 +12,12 @@ public class DataVisualizationService : IDataVisualizationService
     public byte[] LossVisualization(List<double> lossValues)
     {
         Plot plt = new();
+
         plt.AddSignal(lossValues.ToArray());
 
-        var tempPath = Path.Combine(Path.GetTempPath(), "temp_plot.png");
+        var image = SaveFile(plt);
 
-        plt.SaveFig(tempPath,800,600);
-
-        var imageBytes = System.IO.File.ReadAllBytes(tempPath);
-
-        return imageBytes;
+        return image;
     }
 
     public byte[] SpeiDataVisualization(List<double> speiData, List<DateTime> monthData)
@@ -39,15 +36,10 @@ public class DataVisualizationService : IDataVisualizationService
 
         plt.Grid(false);
 
-        var tempPath = Path.Combine(Path.GetTempPath(), "temp_plot.png");
+        var image = SaveFile(plt);
 
-        plt.SaveFig(tempPath, 800, 600);
-
-        var imageBytes = System.IO.File.ReadAllBytes(tempPath);
-
-        return imageBytes;
+        return image;
     }
-
 
     public byte[] PredictedDataVisualization(Tensor predictedValues, NDArray realValues, NDArray month)
     {
@@ -79,7 +71,6 @@ public class DataVisualizationService : IDataVisualizationService
             return date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         }).ToList();
 
-
         Plot plt = new();
 
         plt.Palette = new ScottPlot.Palettes.Nord();
@@ -95,11 +86,18 @@ public class DataVisualizationService : IDataVisualizationService
 
         plt.Grid(false);
 
+        var image = SaveFile(plt);
+
+        return image;
+    }
+
+    private byte[] SaveFile(Plot plt)
+    {
         var tempPath = Path.Combine(Path.GetTempPath(), "temp_plot.png");
 
         plt.SaveFig(tempPath, 800, 600);
 
-        var imageBytes = System.IO.File.ReadAllBytes(tempPath);
+        var imageBytes = File.ReadAllBytes(tempPath);
 
         return imageBytes;
     }

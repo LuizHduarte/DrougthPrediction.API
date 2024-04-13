@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\DroughtPrediction.MachineLearning\DroughtPrediction.MachineLearning.csproj" />
     <ProjectReference Include="..\DroughtPrediction.Services\DroughtPrediction.Services.csproj" />
   </ItemGroup>
 

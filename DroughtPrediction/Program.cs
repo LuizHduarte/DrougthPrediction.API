@@ -1,8 +1,8 @@
 using DroughtPrediction.DataVisualization;
+using DroughtPrediction.MachineLearning.Evaluation;
+using DroughtPrediction.MachineLearning.NeuralNetwork;
 using DroughtPrediction.Services.DataLoading;
 using DroughtPrediction.Services.DataProcessing;
-using DroughtPrediction.Services.Evaluation;
-using DroughtPrediction.Services.NeuralNetwork;
 
 var builder = WebApplication.CreateBuilder(args);
 
