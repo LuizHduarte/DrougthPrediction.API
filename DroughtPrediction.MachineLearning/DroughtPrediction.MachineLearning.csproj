@@ -13,5 +13,4 @@
     <ProjectReference Include="..\DroughtPrediction.Domain\DroughtPrediction.Domain.csproj" />
     <ProjectReference Include="..\DroughtPrediction.Services\DroughtPrediction.Services.csproj" />
   </ItemGroup>
-
 </Project>

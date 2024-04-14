@@ -1,59 +1,47 @@
-﻿using Tensorflow;
-using Tensorflow.NumPy;
-using static Tensorflow.Binding;
+﻿using Numpy;
 
 
 namespace DroughtPrediction.MachineLearning.Evaluation;
 public class EvaluateModelService : IEvaluateModelService
 {
-    public float CalculateAbsoluteError(Tensor predictedData, NDArray trueData)
+    public double CalculateAbsoluteError(NDarray yTrue, NDarray yPred)
     {
-        var tensorToNumpy = predictedData.numpy();
+        var absoluteDifference = np.abs(yTrue - yPred);
 
-        var absoluteDifference = tf.abs(tensorToNumpy - trueData);
+        var meanAbsoluteError = np.mean(absoluteDifference);
 
-        var meanAbsoluteError = tf.reduce_mean(absoluteDifference);
-
-        float[] data = meanAbsoluteError.ToArray<float>();
-
-        return data[0];
+        return meanAbsoluteError;
     }
-    public float CalculateMeanSquaredError(Tensor yTrue, Tensor yPred)
+    public double CalculateMeanSquaredError(NDarray yTrue, NDarray yPred)
     {
-        var squaredDifference = tf.square(yTrue - yPred);
+        var squaredDifference = np.square(yTrue - yPred);
 
-        var meanSquaredError = tf.reduce_mean(squaredDifference);
+        var meanSquaredError = np.mean(squaredDifference);
 
-        float[] data = meanSquaredError.ToArray<float>();
-
-        return data[0];
+        return meanSquaredError;
     }
 
-    public float CalculateRooMeanSquaredError(Tensor yTrue, Tensor yPred)
+    public NDarray CalculateRooMeanSquaredError(NDarray yTrue, NDarray yPred)
     {
-        var squaredDifference = tf.square(yTrue - yPred);
 
-        var meanSquaredError = tf.reduce_mean(squaredDifference);
+        var squaredDifference = np.square(yTrue - yPred);
 
-        var rootMeanSquaredError = tf.sqrt(meanSquaredError);
+        var meanSquaredError = np.mean(squaredDifference);
 
-        float[] data = rootMeanSquaredError.ToArray<float>();
+        var rootMeanSquaredError = np.sqrt(np.array(meanSquaredError));
 
-        return data[0];
+        return rootMeanSquaredError;
     }
 
     // Função para calcular o coeficiente de determinação R²
-    public float CalculateRSquared(Tensor yTrue, Tensor yPred)
+    public NDarray CalculateRSquared(NDarray yTrue, NDarray yPred) 
     {
-        var totalError = tf.reduce_sum(tf.square(yTrue - tf.reduce_mean(yTrue)));
+        var totalError = np.sum(np.square(yTrue - np.mean(yTrue)));
 
-        var residualError = tf.reduce_sum(tf.square(yTrue - yPred));
+        var residualError = np.sum(np.square(yTrue - yPred));
 
         var rSquared = 1 - (residualError / totalError);
 
-        float[] data = rSquared.ToArray<float>();
-
-        return data[0];
-
+        return rSquared;
     }
 }

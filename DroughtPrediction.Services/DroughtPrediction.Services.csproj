@@ -13,20 +13,12 @@
 	<ItemGroup>
 	  <PackageReference Include="EPPlus" Version="7.1.1" />
 	  <PackageReference Include="File.TypeChecker" Version="4.1.0" />
-	  <PackageReference Include="Microsoft.ML" Version="3.0.1" />
-	  <PackageReference Include="NumpyDotNet" Version="0.9.86.2" />
-	  <PackageReference Include="NumSharp" Version="0.30.0" />
-	  <PackageReference Include="pythonnet" Version="3.0.3" />
-	  <PackageReference Include="SciSharp.TensorFlow.Redist" Version="2.16.0" />
 	  <PackageReference Include="SDSLite" Version="3.0.1" />
-	  <PackageReference Include="TensorFlow.Keras" Version="0.15.0" />
-	  <PackageReference Include="TensorFlow.NET" Version="0.150.0" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <ProjectReference Include="..\Drought.Exception\DroughtPrediction.Exceptions.csproj" />
 	  <ProjectReference Include="..\DroughtPrediction.Communication\DroughtPrediction.Communication.csproj" />
-	  <ProjectReference Include="..\DroughtPrediction.DataVisualization\DroughtPrediction.DataVisualization.csproj" />
 	  <ProjectReference Include="..\DroughtPrediction.Domain\DroughtPrediction.Domain.csproj" />
 	</ItemGroup>
 

@@ -1,10 +1,9 @@
-﻿using Tensorflow.NumPy;
+﻿using Numpy;
 
 namespace DroughtPrediction.Communication.Responses;
 
 public class RearangeTimeSeriesOutput
 {
-    public required NDArray InputData { get; set; }
-    public required NDArray OutputData { get; set;}
-
+    public required NDarray InputData { get; set; }
+    public required NDarray OutputData { get; set;}
 }

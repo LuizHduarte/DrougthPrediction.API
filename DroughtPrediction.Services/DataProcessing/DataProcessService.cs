@@ -5,9 +5,9 @@ using DroughtPrediction.Services.DataLoading;
 using System.Data;
 using System.Globalization;
 using System.Text;
-using Tensorflow;
 using SDS = Microsoft.Research.Science.Data;
-using TensorNP = Tensorflow.NumPy;
+using Numpy;
+using DroughtPrediction.Domain;
 
 namespace DroughtPrediction.Services.DataProcessing;
 public class DataProcessService : IDataProcessService
@@ -208,7 +208,7 @@ public class DataProcessService : IDataProcessService
             outIndex.Add(i);
         }
 
-        NumSharp.NDArray outArray = NumSharp.np.array(outIndex.Select(index => data[index]).ToArray());
+        NDarray outArray = np.array(outIndex.Select(index => data[index]).ToArray());
         int linX = outArray.shape[0];
 
         List<double> IN = new();
@@ -218,35 +218,79 @@ public class DataProcessService : IDataProcessService
             IN.Add(data[i]);
         }
 
-        Shape shape = new(linX, window, 1);
-        NumSharp.NDArray reshapedIN = NumSharp.np.reshape(IN.ToArray(), shape);
+        NDarray reshapedIN = np.reshape(IN.ToArray(), (linX, window, 1));
 
-        NumSharp.NDArray outFinal = reshapedIN[$":, {reshapedIN.shape[1] - predictionPoints}:, "];
-        NumSharp.NDArray inFinal = reshapedIN[$":, :{reshapedIN.shape[1] - predictionPoints},  "];
+        NDarray outFinal = reshapedIN[$":, {reshapedIN.shape[1] - predictionPoints}:, "];
+        NDarray inFinal = reshapedIN[$":, :{reshapedIN.shape[1] - predictionPoints},  "];
 
-        var sizeOne = outFinal.size;
-        var sizeTwo = inFinal.size;
-
-        var INConverted = ConvertNumSharpToTensorflow(inFinal);
-        var OUTConverted = ConvertNumSharpToTensorflow(outFinal);
-
-        RearangeTimeSeriesOutput output = new()
+        RearangeTimeSeriesOutput response = new()
         {
-            InputData = INConverted,
-            OutputData = OUTConverted,
+            InputData = inFinal,
+            OutputData = outFinal,
         };
 
-        return output;
+        return response;
     }
 
-    private TensorNP.NDArray ConvertNumSharpToTensorflow(NumSharp.NDArray numSharpArray)
+    public async Task<OrquestredDataForNeuralNetwork> OrquestDataForNeuralNetworkTrain(DataTable dataTable) 
     {
-        double[,,] multiArray = numSharpArray.ToMuliDimArray<double>() as double[,,];
+        var SplitedData = await SplitSIntoTestAndTrainData(dataTable);
 
-        var tensorFlowArray = TensorNP.np.array(multiArray);
+        var reshapedDataTrainParcel = TimeSeriesRearange(SplitedData.TrainData, LstmNeuralNetwork.TotalPoints, LstmNeuralNetwork.PredictionPoints);
+        var reshapedTestDataParcel = TimeSeriesRearange(SplitedData.TestData, LstmNeuralNetwork.TotalPoints, LstmNeuralNetwork.PredictionPoints);
 
-        return tensorFlowArray;
+        var reshapedTrainMonthParcel = TimeSeriesRearange(SplitedData.monthTestData, LstmNeuralNetwork.TotalPoints, LstmNeuralNetwork.PredictionPoints);
+        var reshapedTestMonthParcel = TimeSeriesRearange(SplitedData.monthTestData, LstmNeuralNetwork.TotalPoints, LstmNeuralNetwork.PredictionPoints);
+
+        var trainDataX = reshapedDataTrainParcel.InputData;
+        var trainDataY = reshapedDataTrainParcel.OutputData;
+
+        var testDataX = reshapedTestDataParcel.InputData;
+        var testDataY = np.squeeze(reshapedTestDataParcel.OutputData);
+
+        var trainDataYMonth = np.squeeze(reshapedTrainMonthParcel.OutputData);
+        var testDataYMonth = np.squeeze(reshapedTestMonthParcel.OutputData);
+
+        OrquestredDataForNeuralNetwork orquestredData = new()
+        {
+            testDataX = testDataX,
+            testDataY = testDataY,
+            testDataYMonth = testDataYMonth,
+
+            trainDataX = trainDataX,
+            trainDataY = trainDataY,
+            trainDataYMonth = trainDataYMonth,
+        };
+
+        return orquestredData;
     }
+
+    public async Task<OrquestredDataForNeuralNetworkPrediction> OrquestDataForNeuralNetworkPrediction(DataTable dataTable)
+    {
+        var normalizedSpei = GetSpeiValues(dataTable);
+        var monthData = GetMonthValues(dataTable);
+
+        var reshapedDataParcel = TimeSeriesRearange(normalizedSpei.NormalizedSpeiValues, LstmNeuralNetwork.TotalPoints, LstmNeuralNetwork.PredictionPoints);
+        var reshapedDataMonthParcel = TimeSeriesRearange(monthData, LstmNeuralNetwork.TotalPoints, LstmNeuralNetwork.PredictionPoints);
+
+        var DataX = reshapedDataParcel.InputData;
+        var DataY = np.squeeze(reshapedDataParcel.OutputData);
+
+        var DataXMonth = np.squeeze(reshapedDataMonthParcel.InputData);
+        var DataYMonth = np.squeeze(reshapedDataMonthParcel.OutputData);
+
+        OrquestredDataForNeuralNetworkPrediction orquestredData = new()
+        {
+            DataX = DataX,
+            DataY = DataY,
+            DataXMonth = DataXMonth,
+            DataYMonth = DataYMonth,
+        };
+
+        return orquestredData;
+    }
+
+
 
     private static List<DateTime> GetDateRange(DateTime startDate, DateTime endDate)
     {

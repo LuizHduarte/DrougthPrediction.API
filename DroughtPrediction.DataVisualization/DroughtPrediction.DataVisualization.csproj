@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <PackageReference Include="ScottPlot" Version="4.1.73" />
-    <PackageReference Include="TensorFlow.NET" Version="0.150.0" />
   </ItemGroup>
 
 </Project>

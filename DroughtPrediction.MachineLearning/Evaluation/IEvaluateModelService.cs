@@ -1,11 +1,10 @@
-﻿using Tensorflow;
-using Tensorflow.NumPy;
+﻿using Numpy;
 
 namespace DroughtPrediction.MachineLearning.Evaluation;
 public interface IEvaluateModelService
 {
-    public float CalculateAbsoluteError(Tensor predictedData, NDArray trueData);
-    public float CalculateMeanSquaredError(Tensor yTrue, Tensor yPred);
-    public float CalculateRooMeanSquaredError(Tensor yTrue, Tensor yPred);
-    public float CalculateRSquared(Tensor yTrue, Tensor yPred);
+    public double CalculateAbsoluteError(NDarray predictedData, NDarray trueData);
+    public double CalculateMeanSquaredError(NDarray yTrue, NDarray yPred);
+    public NDarray CalculateRooMeanSquaredError(NDarray yTrue, NDarray yPred);
+    public NDarray CalculateRSquared(NDarray yTrue, NDarray yPred);
 }

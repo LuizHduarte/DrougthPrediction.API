@@ -1,9 +1,6 @@
 ﻿using ScottPlot;
 using System.Drawing;
 using System.Globalization;
-using Tensorflow;
-using Tensorflow.NumPy;
-using static Tensorflow.Binding;
 
 namespace DroughtPrediction.DataVisualization;
 
@@ -41,30 +38,12 @@ public class DataVisualizationService : IDataVisualizationService
         return image;
     }
 
-    public byte[] PredictedDataVisualization(Tensor predictedValues, NDArray realValues, NDArray month)
+    public byte[] PredictedDataVisualization(double[] predictedValues, double[] realValues, double[] month)
     {
         Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
 
-        List<double> realValuesList = [];
-        List<double> predictedValuesList = [];
-        List<double> monthsValuesList = [];
 
-        foreach (double value in realValues.numpy().reshape(-1))
-        {
-            realValuesList.add(value);
-        }
-
-        foreach (double value in predictedValues.numpy().reshape(-1))
-        {
-            predictedValuesList.add(value);
-        }
-
-        foreach (double value in month.numpy().reshape(-1))
-        {
-            monthsValuesList.add(value);
-        }
-
-        List<string> dates = monthsValuesList.Select(unixTimestamp =>
+        List<string> dates = month.Select(unixTimestamp =>
         {
             DateTimeOffset dateTimeOffset = DateTimeOffset.FromUnixTimeSeconds((long)unixTimestamp);
             DateTime date = dateTimeOffset.LocalDateTime;
@@ -74,15 +53,14 @@ public class DataVisualizationService : IDataVisualizationService
         Plot plt = new();
 
         plt.Palette = new ScottPlot.Palettes.Nord();
-        var realSig = plt.AddSignal(realValuesList.ToArray(), label:"True Values");
-        var predictedSig = plt.AddSignal(predictedValuesList.ToArray(), label: "Predicted Values");
-
-        realSig.Label = "True values";
-        predictedSig.Label = "Predicted values";
+        plt.AddScatter(month, realValues, label:"True Values");
+        plt.AddScatter(month, predictedValues, label: "Predicted Values");
+        plt.XAxis.DateTimeFormat(true);
 
         plt.XLabel("Year");
         plt.YLabel("SPEI");
         plt.Title("SPEI");
+        plt.Legend();
 
         plt.Grid(false);
 

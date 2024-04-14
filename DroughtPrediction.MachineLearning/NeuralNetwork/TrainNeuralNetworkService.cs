@@ -1,12 +1,13 @@
-﻿using DroughtPrediction.Communication.Responses;
-using DroughtPrediction.DataVisualization;
+﻿using DroughtPrediction.DataVisualization;
+using DroughtPrediction.Domain;
 using DroughtPrediction.MachineLearning.Evaluation;
 using DroughtPrediction.Services.DataProcessing;
+using Keras.Layers;
+using Keras.Models;
+using Microsoft.AspNetCore.Http;
+using Numpy;
 using System.Data;
-using Tensorflow.Keras.Engine;
-using static Tensorflow.Binding;
-using static Tensorflow.KerasApi;
-
+using System.IO;
 namespace DroughtPrediction.MachineLearning.NeuralNetwork;
 
 public class TrainNeuralNetworkService : ITrainNeuralNetworkService
@@ -24,51 +25,44 @@ public class TrainNeuralNetworkService : ITrainNeuralNetworkService
 
     private Sequential DefineLstmModel()
     {
-        var model = keras.Sequential();
-        model.add(keras.layers.LSTM(units: 6, activation: keras.activations.Relu));
-        //model.add(keras.layers.LSTM(units: MLMethods.hiddenUnits, activation: keras.activations.Relu, return_sequences: true));
-        //model.add(keras.layers.LSTM(units: MLMethods.PredictionPoints, activation: keras.activations.Linear));
-        model.add(keras.layers.Dense(units: LstmNeuralNetwork.PredictionPoints, activation: keras.activations.Linear));
-        model.add(keras.layers.Dense(units: LstmNeuralNetwork.PredictionPoints, activation: keras.activations.Linear));
-        model.add(keras.layers.Dense(units: LstmNeuralNetwork.PredictionPoints, activation: keras.activations.Linear));
+        var model = new Sequential();
+        var input_shape = (LstmNeuralNetwork.InputShape,1);
+        model.Add(new LSTM(units: LstmNeuralNetwork.hiddenUnits, activation: "relu", input_shape: input_shape));
+        model.Add(new Dense(units: LstmNeuralNetwork.PredictionPoints, activation: "linear"));
+        model.Add(new Dense(units: LstmNeuralNetwork.PredictionPoints, activation: "linear"));
+        model.Add(new Dense(units: LstmNeuralNetwork.PredictionPoints, activation: "linear"));
+
+        model.Compile(loss: "mean_squared_error", optimizer: "adam");
+        model.Summary();
 
         return model;
     }
 
-    public async Task<NeuralNetworkEvaluationResult> TrainModel(DataTable dataTable)
+    public async Task<byte[]> TrainModel(DataTable dataTable)
     {
-        var model = DefineLstmModel();
-
-        model.compile(optimizer: keras.optimizers.Adam(),loss: keras.losses.MeanSquaredError());
-
+        var orquestredData = await _dataProcessService.OrquestDataForNeuralNetworkTrain(dataTable);
         var SplitedData = await _dataProcessService.SplitSIntoTestAndTrainData(dataTable);
 
-        var reshapedDataTrainParcel = _dataProcessService.TimeSeriesRearange(SplitedData.TrainData, LstmNeuralNetwork.TotalPoints, LstmNeuralNetwork.PredictionPoints);
-        var reshapedTestDataParcel = _dataProcessService.TimeSeriesRearange(SplitedData.TestData, LstmNeuralNetwork.TotalPoints, LstmNeuralNetwork.PredictionPoints);
+        var model = DefineLstmModel();
+        var history = model.Fit(orquestredData.trainDataX, orquestredData.trainDataY, batch_size: 1, epochs: LstmNeuralNetwork.NumberOfEpochs, verbose: 1);
+        double[] lossHistory = history.HistoryLogs["loss"];
+        var imageBytes = SaveModel(model);
 
-        var reshapedTestMonthParcel = _dataProcessService.TimeSeriesRearange(SplitedData.monthTestData, LstmNeuralNetwork.TotalPoints, LstmNeuralNetwork.PredictionPoints);
+        var predictionValues = model.Predict(orquestredData.testDataX);
 
-        var trainDataX = reshapedDataTrainParcel.InputData.astype(Tensorflow.TF_DataType.TF_FLOAT);
-        var trainDataY = tf.squeeze(reshapedDataTrainParcel.OutputData.astype(Tensorflow.TF_DataType.TF_FLOAT)).numpy();
+        var absError = _evaluateModelService.CalculateAbsoluteError(orquestredData.testDataY, predictionValues);
+        var mseError = _evaluateModelService.CalculateMeanSquaredError(orquestredData.testDataY, predictionValues);
+        var rmseError = _evaluateModelService.CalculateRooMeanSquaredError(orquestredData.testDataY, predictionValues);
+        var rSquared = _evaluateModelService.CalculateRSquared(orquestredData.testDataY, predictionValues);
 
-        var testDataX = reshapedTestDataParcel.InputData.astype(Tensorflow.TF_DataType.TF_FLOAT);
-        var testDataY = tf.squeeze(reshapedTestDataParcel.OutputData.astype(Tensorflow.TF_DataType.TF_FLOAT)).numpy();
+        double[] predictedValuesList =  Array.ConvertAll(predictionValues.GetData<float>(), x => (double)x);
+        double[] realValuesList = orquestredData.testDataY.GetData<double>();
+        double[] monthValuesList = orquestredData.testDataYMonth.GetData<double>();
 
-        var testDataYMonth = tf.squeeze(reshapedTestMonthParcel.OutputData).numpy();
+        //var lossImage = _dataVisualizationService.LossVisualization(lossValues);
+        var CompareValues = _dataVisualizationService.PredictedDataVisualization(predictedValuesList, realValuesList, monthValuesList);
 
-        var history = model.fit(trainDataX, trainDataY, batch_size: 1, epochs: LstmNeuralNetwork.NumberOfEpochs, verbose: 1);
-        var predictionValues = model.predict(testDataX);
-
-        var absError = _evaluateModelService.CalculateAbsoluteError(predictionValues, testDataY);
-        var mseError = _evaluateModelService.CalculateMeanSquaredError(predictionValues, testDataY);
-        var rmseError = _evaluateModelService.CalculateRooMeanSquaredError(predictionValues, testDataY);
-        var rSquared = _evaluateModelService.CalculateRSquared(predictionValues, testDataY);
-
-        List<double> lossValues = [.. history.history["loss"]];
-
-        var lossImage = _dataVisualizationService.LossVisualization(lossValues);
-        var CompareValues = _dataVisualizationService.PredictedDataVisualization(predictionValues, testDataY, testDataYMonth);
-
+        /*
         NeuralNetworkEvaluationResult result = new()
         {
             AbsoluteError = absError,
@@ -77,8 +71,61 @@ public class TrainNeuralNetworkService : ITrainNeuralNetworkService
             RSquared = rSquared,
             imageBytes = CompareValues
         };
+        */
 
-        return result;
+        return imageBytes;
+    }
+
+    public async Task<byte[]> LoadModel(IFormFile file, DataTable dataTable)
+    {
+        var fileName = Path.GetRandomFileName() + Path.GetExtension(file.FileName);
+        var filePath = Path.Combine(Path.GetTempPath(), fileName);
+
+        var fileStream = file.OpenReadStream();
+
+        using (fileStream = new FileStream(filePath, FileMode.Create))
+        {
+            await file.CopyToAsync(fileStream);
+        }
+
+        var orquestredData = await _dataProcessService.OrquestDataForNeuralNetworkPrediction(dataTable);
+
+        var model = DefineLstmModel();
+        model.Compile(loss: "mean_squared_error", optimizer: "adam");
+        model.Summary();
+
+        model.LoadWeight(filePath);
+
+        model.Summary();
+
+        var predictionValues = model.Predict(orquestredData.DataX);
+
+        var absError = _evaluateModelService.CalculateAbsoluteError(orquestredData.DataY, predictionValues);
+        var mseError = _evaluateModelService.CalculateMeanSquaredError(orquestredData.DataY, predictionValues);
+        var rmseError = _evaluateModelService.CalculateRooMeanSquaredError(orquestredData.DataY, predictionValues);
+        var rSquared = _evaluateModelService.CalculateRSquared(orquestredData.DataY, predictionValues);
+
+        double[] predictedValuesList = Array.ConvertAll(predictionValues.GetData<float>(), x => (double)x);
+        double[] realValuesList = orquestredData.DataY.GetData<double>();
+        double[] monthValuesList = orquestredData.DataYMonth.GetData<double>();
+
+        var CompareValues = _dataVisualizationService.PredictedDataVisualization(predictedValuesList, realValuesList, monthValuesList);
+
+        return CompareValues;
+
+    }
+
+    private byte[] SaveModel(Sequential model)
+    {
+        var initialPath = Path.GetTempPath();
+        var temp = "tempWWW.h5";
+        var tempPath = Path.Combine(initialPath, temp);
+
+        model.SaveWeight(tempPath);
+
+        var imageBytes = File.ReadAllBytes(tempPath);
+
+        return imageBytes;
     }
 }
 

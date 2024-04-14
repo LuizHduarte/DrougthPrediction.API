@@ -1,12 +1,9 @@
-﻿using DroughtPrediction.Communication.Requests;
-using DroughtPrediction.Exceptions;
+﻿using DroughtPrediction.Exceptions;
 using FileTypeChecker;
-using FileTypeChecker.Abstracts;
 using FileTypeChecker.Extensions;
 using Microsoft.AspNetCore.Http;
 using OfficeOpenXml;
 using System.Data;
-using System.Text;
 using static DroughtPrediction.Services.DataLoading.FileTypeChecker;
 using SDS = Microsoft.Research.Science.Data;
 
@@ -62,7 +59,7 @@ public class DataLoadingService : IDataLoadingService
         FileTypeValidator.RegisterCustomTypes(typeof(NetCDF).Assembly);
 
         var fileName = Path.GetRandomFileName() + Path.GetExtension(file.FileName);
-        var filePath = Path.Combine(Path.GetTempPath(), fileName);
+        var filePath = Path.Combine(Path.GetTempPath(), fileName);  
 
         var fileStream = file.OpenReadStream();
 

@@ -14,7 +14,7 @@ public class NeuralNetworkController : ControllerBase
     {
         var test = await dataLoadingService.LoadFromXlsxFileData(file);
         var result = await service.TrainModel(test);
-
+        /*
         var response = new
         {
             data = new { 
@@ -24,10 +24,19 @@ public class NeuralNetworkController : ControllerBase
                 result.RSquared
             },
         };
+        */
 
         Response.ContentType = "application/json";
-        //return Ok(File(result.imageBytes, "application/octet-stream", "filename.png"));
-        return File(result.imageBytes, "application/octet-stream", "filename.png");
+        return File(result, "application/octet-stream", "modelWeights.h5");
+    }
+
+    [HttpPost]
+    [Route("LoadLstmModel")]
+    public async Task<IActionResult> LoadModel(IFormFile modelWeight, IFormFile xlsx, [FromServices] ITrainNeuralNetworkService service, [FromServices] IDataLoadingService dataLoadingService)
+    {
+        var request = await dataLoadingService.LoadFromXlsxFileData(xlsx);
+        var response = await service.LoadModel(modelWeight, request);
+        return File(response, "application/octet-stream", "modelWeights.png");
     }
 }
 
