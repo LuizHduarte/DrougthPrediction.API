@@ -43,18 +43,20 @@ public class DataVisualizationService : IDataVisualizationService
         Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
 
 
-        List<string> dates = month.Select(unixTimestamp =>
+        List<DateTime> dates = month.Select(unixTimestamp =>
         {
             DateTimeOffset dateTimeOffset = DateTimeOffset.FromUnixTimeSeconds((long)unixTimestamp);
             DateTime date = dateTimeOffset.LocalDateTime;
-            return date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+            return date;
         }).ToList();
+
+        double[] xs = dates.Select(x => x.ToOADate()).ToArray();
 
         Plot plt = new();
 
         plt.Palette = new ScottPlot.Palettes.Nord();
-        plt.AddScatter(month, realValues, label:"True Values");
-        plt.AddScatter(month, predictedValues, label: "Predicted Values");
+        plt.AddScatter(xs, realValues, label:"True Values");
+        plt.AddScatter(xs, predictedValues, label: "Predicted Values");
         plt.XAxis.DateTimeFormat(true);
 
         plt.XLabel("Year");

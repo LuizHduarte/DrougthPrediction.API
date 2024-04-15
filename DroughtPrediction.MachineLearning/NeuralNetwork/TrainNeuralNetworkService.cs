@@ -5,9 +5,7 @@ using DroughtPrediction.Services.DataProcessing;
 using Keras.Layers;
 using Keras.Models;
 using Microsoft.AspNetCore.Http;
-using Numpy;
 using System.Data;
-using System.IO;
 namespace DroughtPrediction.MachineLearning.NeuralNetwork;
 
 public class TrainNeuralNetworkService : ITrainNeuralNetworkService
