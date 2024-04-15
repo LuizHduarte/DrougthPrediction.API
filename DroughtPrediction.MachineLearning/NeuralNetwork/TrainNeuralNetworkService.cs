@@ -1,4 +1,5 @@
-﻿using DroughtPrediction.DataVisualization;
+﻿using DroughtPrediction.Communication.Responses;
+using DroughtPrediction.DataVisualization;
 using DroughtPrediction.Domain;
 using DroughtPrediction.MachineLearning.Evaluation;
 using DroughtPrediction.Services.DataProcessing;
@@ -36,7 +37,7 @@ public class TrainNeuralNetworkService : ITrainNeuralNetworkService
         return model;
     }
 
-    public async Task<byte[]> TrainModel(DataTable dataTable)
+    public async Task<NeuralNetworkTrainingResponse> TrainModel(DataTable dataTable)
     {
         var orquestredData = await _dataProcessService.OrquestDataForNeuralNetworkTrain(dataTable);
         var SplitedData = await _dataProcessService.SplitSIntoTestAndTrainData(dataTable);
@@ -44,7 +45,8 @@ public class TrainNeuralNetworkService : ITrainNeuralNetworkService
         var model = DefineLstmModel();
         var history = model.Fit(orquestredData.trainDataX, orquestredData.trainDataY, batch_size: 1, epochs: LstmNeuralNetwork.NumberOfEpochs, verbose: 1);
         double[] lossHistory = history.HistoryLogs["loss"];
-        var imageBytes = SaveModel(model);
+
+        var modelWeights = SaveModel(model);
 
         var predictionValues = model.Predict(orquestredData.testDataX);
 
@@ -57,8 +59,15 @@ public class TrainNeuralNetworkService : ITrainNeuralNetworkService
         double[] realValuesList = orquestredData.testDataY.GetData<double>();
         double[] monthValuesList = orquestredData.testDataYMonth.GetData<double>();
 
-        //var lossImage = _dataVisualizationService.LossVisualization(lossValues);
         var CompareValues = _dataVisualizationService.PredictedDataVisualization(predictedValuesList, realValuesList, monthValuesList);
+        var historyLossImage = _dataVisualizationService.LossVisualization(lossHistory.ToList());
+
+        NeuralNetworkTrainingResponse neuralNetworkTrainingResponse = new()
+        {
+            LossHitory = historyLossImage,
+            PredictedValues = CompareValues,
+            ModelWeights = modelWeights
+        };
 
         /*
         NeuralNetworkEvaluationResult result = new()
@@ -71,7 +80,7 @@ public class TrainNeuralNetworkService : ITrainNeuralNetworkService
         };
         */
 
-        return imageBytes;
+        return neuralNetworkTrainingResponse;
     }
 
     public async Task<byte[]> LoadModel(IFormFile file, DataTable dataTable)

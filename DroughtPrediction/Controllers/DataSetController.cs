@@ -31,6 +31,16 @@ public class DataManipulation : ControllerBase
 
         return File(response, "text/csv", "filename.csv");
     }
+
+    [HttpPost]
+    [Route("CalculateSPEIFromBalance")]
+    public async Task<IActionResult> GetSpei([FromServices] IDataLoadingService dataLoadingService, [FromServices] IDataProcessService dataProcessService, IFormFile file )
+    {
+        var data = await dataLoadingService.LoadFromCsvFileData(file);
+        var response = await dataProcessService.CalculateSPEIFromBalance(data);
+
+        return File(response, "text/csv", "SPEI.csv");
+    }
 }
 
 

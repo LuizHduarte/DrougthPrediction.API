@@ -12,6 +12,11 @@ public class DataVisualizationService : IDataVisualizationService
 
         plt.AddSignal(lossValues.ToArray());
 
+        plt.XLabel("Epochs");
+        plt.YLabel("Mean Squared Error");
+        plt.Title("Loss in training");
+        plt.Grid(false);
+
         var image = SaveFile(plt);
 
         return image;

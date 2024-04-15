@@ -1,9 +1,14 @@
-﻿using DroughtPrediction.Exceptions;
+﻿using CsvHelper;
+using CsvHelper.TypeConversion;
+using DroughtPrediction.Exceptions;
 using FileTypeChecker;
 using FileTypeChecker.Extensions;
 using Microsoft.AspNetCore.Http;
 using OfficeOpenXml;
 using System.Data;
+using System.Globalization;
+using System.IO;
+using System.Text;
 using static DroughtPrediction.Services.DataLoading.FileTypeChecker;
 using SDS = Microsoft.Research.Science.Data;
 
@@ -17,7 +22,7 @@ public class DataLoadingService : IDataLoadingService
 
         var fileStream = file.OpenReadStream();
         var isExcel = fileStream.Is<Excel>();
-
+        
         if (isExcel == false)
         {
             throw new IncorrectFileException("The file format is incorrect");
@@ -51,6 +56,47 @@ public class DataLoadingService : IDataLoadingService
                 }
             }
         }
+        return dataTable;
+    }
+
+    public async Task<DataTable> LoadFromCsvFileData(IFormFile file)
+    {
+        DataTable dataTable = new DataTable();
+
+        var fileName = Path.GetRandomFileName() + Path.GetExtension(file.FileName);
+        var filePath = Path.Combine(Path.GetTempPath(), fileName);
+
+        var fileStream = file.OpenReadStream();
+
+        using (fileStream = new FileStream(filePath, FileMode.Create))
+        {
+            await file.CopyToAsync(fileStream);
+        }
+
+        using (Stream stream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+        {
+            using (TextReader reader = new StreamReader(stream, Encoding.UTF8))
+            {
+
+                var cache = new TypeConverterCache();
+                cache.AddConverter<float>(new SingleConverter());
+                cache.AddConverter<double>(new DoubleConverter());
+                var csv = new CsvReader(reader,
+                    new CsvHelper.Configuration.CsvConfiguration(global::System.Globalization.CultureInfo.InvariantCulture)
+                    {
+                        Delimiter = ";",
+                        HasHeaderRecord = true
+                    });
+                csv.Read();
+                csv.ReadHeader();
+
+                using (var dr = new CsvDataReader(csv))
+                {
+                    dataTable.Load(dr);
+                }
+            }
+        }
+
         return dataTable;
     }
 

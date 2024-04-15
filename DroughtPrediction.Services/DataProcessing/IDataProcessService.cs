@@ -14,4 +14,5 @@ public interface IDataProcessService
     public Task<byte[]> ExtractBalanceFromNetCdfFileData(SDS.DataSet dataSet, BalanceCoordinatesObjectJson balanceCoordinatesObjectJson);
     public Task<OrquestredDataForNeuralNetwork> OrquestDataForNeuralNetworkTrain(DataTable dataTable);
     public Task<OrquestredDataForNeuralNetworkPrediction> OrquestDataForNeuralNetworkPrediction(DataTable dataTable);
+    public Task<byte[]> CalculateSPEIFromBalance(DataTable dataTable);
 }

@@ -8,6 +8,7 @@ using System.Text;
 using SDS = Microsoft.Research.Science.Data;
 using Numpy;
 using DroughtPrediction.Domain;
+using RDotNet;
 
 namespace DroughtPrediction.Services.DataProcessing;
 public class DataProcessService : IDataProcessService
@@ -290,7 +291,66 @@ public class DataProcessService : IDataProcessService
         return orquestredData;
     }
 
+    public async Task<byte[]> CalculateSPEIFromBalance(DataTable dataTable)
+    {
 
+        //engine.Evaluate("library(SPEI)");
+        REngine engine = REngine.GetInstance();
+        engine.Evaluate(".libPaths()");
+        engine.Evaluate("library(SPEI)");
+
+        var dateColumn = dataTable.AsEnumerable().Select(row => row.Field<string>(dataTable.Columns[0].ColumnName)).ToArray();
+        var doubleColumn = dataTable.AsEnumerable().Select(row => double.Parse(row.Field<string>(dataTable.Columns[1].ColumnName))).ToArray();
+
+        // Crie vetores para cada coluna
+        CharacterVector dateVector = engine.CreateCharacterVector(dateColumn);
+        NumericVector doubleVector = engine.CreateNumericVector(doubleColumn);
+
+        engine.SetSymbol("dateVector", dateVector);
+        engine.SetSymbol("doubleVector", doubleVector);
+
+        DataFrame dataFrame = engine.Evaluate("data.frame(date = dateVector, value = doubleVector)").AsDataFrame();
+
+        engine.SetSymbol("data", dataFrame);
+
+        engine.Evaluate("data <- ts(data[, -c(1)], end = c(2019, 10), frequency = 12)");
+
+        engine.Evaluate("spei12 <- spei(data, 12)");
+
+        engine.Evaluate("spei12 <- spei12$fitted");
+
+        var spei12DataFrame = engine.GetSymbol("spei12").AsVector();
+
+        DataTable spei12DataTable = new DataTable();
+        spei12DataTable.Columns.Add("Data");
+        spei12DataTable.Columns.Add("Spei");
+ 
+        for (int i = 0; i < spei12DataFrame.Length; i++)
+        {
+            var row = spei12DataTable.NewRow();
+            row[1] = spei12DataFrame[i];
+            row[0] = dateColumn[i];
+            spei12DataTable.Rows.Add(row);
+        }
+
+        engine.Evaluate("detach('package:SPEI', unload=TRUE)");
+        engine.Dispose();
+
+        StringBuilder sb = new StringBuilder();
+    
+        string[] columnNames = spei12DataTable.Columns.Cast<DataColumn>().Select(column => column.ColumnName).ToArray();
+        sb.AppendLine(string.Join(";", columnNames));
+
+        foreach (DataRow row in spei12DataTable.Rows)
+        {
+            string[] fields = row.ItemArray.Select(field => field.ToString()).ToArray();
+            sb.AppendLine(string.Join(";", fields));
+        }
+
+        byte[] buffer = Encoding.ASCII.GetBytes(sb.ToString());
+
+        return buffer;
+    }
 
     private static List<DateTime> GetDateRange(DateTime startDate, DateTime endDate)
     {
