@@ -85,13 +85,6 @@ public class DataLoadingService : IDataLoadingService
 
         var fileStream = file.OpenReadStream();
 
-        var isExcel = fileStream.Is<Excel>();
-
-        if (isExcel == false)
-        {
-            throw new IncorrectFileException("The file format is incorrect");
-        }
-
         using (fileStream = new FileStream(filePath, FileMode.Create))
         {
             await file.CopyToAsync(fileStream);
