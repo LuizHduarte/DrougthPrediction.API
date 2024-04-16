@@ -1,25 +1,17 @@
 ﻿using DroughtPrediction.Communication.Requests;
 using DroughtPrediction.Communication.Responses;
+using DroughtPrediction.Domain;
 using DroughtPrediction.Exceptions;
-using DroughtPrediction.Services.DataLoading;
+using Numpy;
+using RDotNet;
 using System.Data;
 using System.Globalization;
 using System.Text;
 using SDS = Microsoft.Research.Science.Data;
-using Numpy;
-using DroughtPrediction.Domain;
-using RDotNet;
 
 namespace DroughtPrediction.Services.DataProcessing;
 public class DataProcessService : IDataProcessService
 {
-    private readonly IDataLoadingService _dataLoadingService;
-
-    public DataProcessService(IDataLoadingService dataLoadingService) 
-    { 
-        _dataLoadingService = dataLoadingService;
-    }
-
     public List<DateTime> GetMonthValues(DataTable dataSet)
     {
         List<DateTime> monthValues = new();
@@ -28,10 +20,9 @@ public class DataProcessService : IDataProcessService
         foreach (DataRow row in dataSet.Rows)
         {
             string value = row[1].ToString();
-            DateTime data = DateTime.ParseExact(value, format, null);
+            DateTime data = DateTime.Parse(value, CultureInfo.CurrentCulture, DateTimeStyles.None);
             monthValues.Add(data);
         }
-
         return monthValues;
     }
 
@@ -100,9 +91,79 @@ public class DataProcessService : IDataProcessService
         return splittedDataSet;
     }
 
-    public async Task<byte[]> ExtractBalanceFromNetCdfFileData(SDS.DataSet dataSet, BalanceCoordinatesObjectJson balanceCoordinatesObjectJson)
+    public async Task<byte[]> ExtractBalanceFromNetCdfFileData(SDS.DataSet dataSet)
     {
-   
+        var time = dataSet["time"].GetData();
+
+        var firstYear = new DateTime(1966, 01, 01);
+        var lastYear = new DateTime(2020, 12, 31);
+
+        var lat = dataSet["latitude"].GetData();
+        var lon = dataSet["longitude"].GetData();
+
+        float[] latArray = (float[])lat;
+        float[] lonArray = (float[])lon;
+
+        List<DateTime> dateRange = GetDateRange(firstYear, lastYear);
+
+        var df = new DataTable();
+        df.Columns.Add("Date", typeof(DateTime));
+
+        for (int i = 0; i < dateRange.Count; i++)
+        {
+            DataRow row = df.NewRow();
+            row["Date"] = dateRange[i];
+            df.Rows.Add(row);
+        }
+
+        for (int i = 0; i < lonArray.Length; i++)
+        {
+            for (int j = 0; j < latArray.Length; j++)
+            {
+                string columnName = (lonArray[i].ToString() + ":" + latArray[j].ToString());
+                DataColumn latitudeColumn = new DataColumn(columnName, typeof(float));
+                df.Columns.Add(latitudeColumn);
+            }
+        }
+
+        var balance = dataSet.Variables["w"].GetData();
+
+        int lonLength = lonArray.Length;
+        int latLength = latArray.Length;
+        int dateRangeCount = dateRange.Count;
+
+
+        for (int i = 0; i < lonLength; i++)
+        {
+            for (int j = 0; j < latLength; j++)
+            {
+                for (int t_index = 0; t_index < dateRangeCount; t_index++)
+                {
+                    df.Rows[t_index][lonArray[i].ToString() + ":" + latArray[j].ToString()] = balance.GetValue(t_index, j, i);
+                }
+            }
+        }
+
+        StringBuilder sb = new StringBuilder();
+
+        string[] columnNames = df.Columns.Cast<DataColumn>().Select(column => column.ColumnName).ToArray();
+        sb.AppendLine(string.Join(";", columnNames));
+
+        foreach (DataRow row in df.Rows)
+        {
+            string[] fields = row.ItemArray.Select(field => field.ToString()).ToArray();
+            sb.AppendLine(string.Join(";", fields));
+        }
+
+        byte[] buffer = Encoding.ASCII.GetBytes(sb.ToString());
+
+        return buffer;
+
+    }
+
+    public async Task<byte[]> ExtractBalanceFromCoordinatesNetCdfFileData(SDS.DataSet dataSet, BalanceCoordinatesObjectJson balanceCoordinatesObjectJson)
+    {
+
         double lat_seiLa;
         double lon_seiLa;
 
@@ -322,14 +383,14 @@ public class DataProcessService : IDataProcessService
         var spei12DataFrame = engine.GetSymbol("spei12").AsVector();
 
         DataTable spei12DataTable = new DataTable();
-        spei12DataTable.Columns.Add("Data");
         spei12DataTable.Columns.Add("Spei");
+        spei12DataTable.Columns.Add("Data");
  
         for (int i = 0; i < spei12DataFrame.Length; i++)
         {
             var row = spei12DataTable.NewRow();
-            row[1] = spei12DataFrame[i];
-            row[0] = dateColumn[i];
+            row[0] = spei12DataFrame[i];
+            row[1] = dateColumn[i];
             spei12DataTable.Rows.Add(row);
         }
 

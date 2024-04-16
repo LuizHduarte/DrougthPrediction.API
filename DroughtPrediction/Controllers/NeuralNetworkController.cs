@@ -1,8 +1,6 @@
 ﻿using DroughtPrediction.MachineLearning.NeuralNetwork;
 using DroughtPrediction.Services.DataLoading;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections;
-using System.IO;
 using System.IO.Compression;
 
 namespace DroughtPrediction.Api.Controllers;
@@ -15,9 +13,11 @@ public class NeuralNetworkController : ControllerBase
     [Route("TrainLSTMNeuralNetwork")]
     public async Task<IActionResult> TrainNetworkFromXlsx(IFormFile file, [FromServices] ITrainNeuralNetworkService service, [FromServices] IDataLoadingService dataLoadingService )
     {
-        var test = await dataLoadingService.LoadFromXlsxFileData(file);
-        var result = await service.TrainModel(test);
-        /*
+        var data = await dataLoadingService.FileLoader(file);
+
+        var result = await service.TrainModel(data);
+
+        /* 
         var response = new
         {
             data = new { 
@@ -56,10 +56,11 @@ public class NeuralNetworkController : ControllerBase
 
     [HttpPost]
     [Route("LoadLstmModel")]
-    public async Task<IActionResult> LoadModel(IFormFile modelWeight, IFormFile xlsx, [FromServices] ITrainNeuralNetworkService service, [FromServices] IDataLoadingService dataLoadingService)
+    public async Task<IActionResult> LoadModel(IFormFile modelWeight, IFormFile file, [FromServices] ITrainNeuralNetworkService service, [FromServices] IDataLoadingService dataLoadingService)
     {
-        var request = await dataLoadingService.LoadFromXlsxFileData(xlsx);
-        var response = await service.LoadModel(modelWeight, request);
+        var data = await dataLoadingService.FileLoader(file);
+
+        var response = await service.LoadModel(modelWeight, data);
         return File(response, "application/octet-stream", "modelWeights.png");
     }
 }

@@ -6,8 +6,6 @@ using FileTypeChecker.Extensions;
 using Microsoft.AspNetCore.Http;
 using OfficeOpenXml;
 using System.Data;
-using System.Globalization;
-using System.IO;
 using System.Text;
 using static DroughtPrediction.Services.DataLoading.FileTypeChecker;
 using SDS = Microsoft.Research.Science.Data;
@@ -56,6 +54,25 @@ public class DataLoadingService : IDataLoadingService
                 }
             }
         }
+
+        List<DataRow> rowsToDelete = new List<DataRow>();
+
+        foreach (DataColumn col in dataTable.Columns)
+        {
+            foreach (DataRow row in dataTable.Rows)
+            {
+                if (row[col.ColumnName].ToString().Equals("NaN"))
+                {
+                    rowsToDelete.Add(row);
+                }
+            }
+        }
+
+        foreach (DataRow row in rowsToDelete)
+        {
+            dataTable.Rows.Remove(row);
+        }
+
         return dataTable;
     }
 
@@ -67,6 +84,13 @@ public class DataLoadingService : IDataLoadingService
         var filePath = Path.Combine(Path.GetTempPath(), fileName);
 
         var fileStream = file.OpenReadStream();
+
+        var isExcel = fileStream.Is<Excel>();
+
+        if (isExcel == false)
+        {
+            throw new IncorrectFileException("The file format is incorrect");
+        }
 
         using (fileStream = new FileStream(filePath, FileMode.Create))
         {
@@ -97,7 +121,49 @@ public class DataLoadingService : IDataLoadingService
             }
         }
 
+        List<DataRow> rowsToDelete = new List<DataRow>();
+
+        foreach (DataColumn col in dataTable.Columns)
+        {
+            foreach (DataRow row in dataTable.Rows)
+            {
+                if (row[col.ColumnName].ToString().Equals("NaN"))
+                {
+                    rowsToDelete.Add(row);
+                }
+            }
+        }
+
+        foreach (DataRow row in rowsToDelete)
+        {
+            dataTable.Rows.Remove(row);
+        }
+
+        dataTable.AcceptChanges();
+
         return dataTable;
+    }
+
+    public async Task<DataTable> FileLoader(IFormFile file)
+    {
+        var fileExtension = Path.GetExtension(file.FileName);
+
+        DataTable data = new DataTable();
+
+        if (fileExtension == ".xlsx")
+        {
+            data = await LoadFromXlsxFileData(file);
+        }
+        else if (fileExtension == ".csv")
+        {
+            data = await LoadFromCsvFileData(file);
+        }
+        else
+        {
+            throw new IncorrectFileException("The file format is incorrect");
+        }
+
+        return data;
     }
 
     public async Task<SDS.DataSet> LoadFromNetCdfFileData(IFormFile file)
